@@ -17,4 +17,5 @@ public record VehiculoResponse(
         Integer numeroPuertas,
         Integer cilindrada,
         Boolean incluyeCasco,
-        BigDecimal capacidadToneladas) { }
+        BigDecimal capacidadToneladas,
+        Boolean disponible) { }

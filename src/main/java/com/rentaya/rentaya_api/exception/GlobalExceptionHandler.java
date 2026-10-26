@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -45,6 +47,25 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> manejarArgumentoInvalido(IllegalArgumentException ex,
                                                                  HttpServletRequest request) {
         return construir(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> manejarEstadoInvalido(IllegalStateException ex,
+                                                              HttpServletRequest request) {
+        return construir(HttpStatus.CONFLICT, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> manejarParametroInvalido(HandlerMethodValidationException ex,
+                                                                 HttpServletRequest request) {
+        return construir(HttpStatus.BAD_REQUEST, "Parámetros inválidos", request, null);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> manejarParametroFaltante(MissingServletRequestParameterException ex,
+                                                                 HttpServletRequest request) {
+        return construir(HttpStatus.BAD_REQUEST,
+                "Falta el parámetro '" + ex.getParameterName() + "'", request, null);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

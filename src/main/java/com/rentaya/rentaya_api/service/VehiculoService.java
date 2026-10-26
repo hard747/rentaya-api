@@ -7,6 +7,7 @@ import com.rentaya.rentaya_api.dto.VehiculoResponse;
 import com.rentaya.rentaya_api.exception.ConflictoException;
 import com.rentaya.rentaya_api.exception.RecursoNoEncontradoException;
 import com.rentaya.rentaya_api.mapper.VehiculoMapper;
+import com.rentaya.rentaya_api.model.Alquilable;
 import com.rentaya.rentaya_api.model.Auto;
 import com.rentaya.rentaya_api.model.Camion;
 import com.rentaya.rentaya_api.model.Moto;
@@ -76,7 +77,12 @@ public class VehiculoService {
 
     @Transactional
     public void eliminar(Long id) {
-        buscarActivo(id).desactivar();
+        Vehiculo vehiculo = buscarActivo(id);
+        if (vehiculo instanceof Alquilable alquilable && !alquilable.estaDisponible()) {
+            throw new IllegalStateException("No se puede dar de baja el vehículo " + vehiculo.getPlaca()
+                    + " porque está alquilado");
+        }
+        vehiculo.desactivar();
     }
 
     @Transactional(readOnly = true)

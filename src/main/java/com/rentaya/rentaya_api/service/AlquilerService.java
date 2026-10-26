@@ -1,0 +1,98 @@
+package com.rentaya.rentaya_api.service;
+
+import com.rentaya.rentaya_api.dto.AlquilerResponse;
+import com.rentaya.rentaya_api.dto.CotizacionResponse;
+import com.rentaya.rentaya_api.dto.CrearAlquilerRequest;
+import com.rentaya.rentaya_api.exception.RecursoNoEncontradoException;
+import com.rentaya.rentaya_api.model.Alquilable;
+import com.rentaya.rentaya_api.model.Alquiler;
+import com.rentaya.rentaya_api.model.Cliente;
+import com.rentaya.rentaya_api.model.Vehiculo;
+import com.rentaya.rentaya_api.repository.AlquilerRepository;
+import com.rentaya.rentaya_api.repository.ClienteRepository;
+import com.rentaya.rentaya_api.repository.VehiculoRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Service
+public class AlquilerService {
+
+    private final AlquilerRepository alquilerRepository;
+    private final ClienteRepository clienteRepository;
+    private final VehiculoRepository vehiculoRepository;
+
+    public AlquilerService(AlquilerRepository alquilerRepository, ClienteRepository clienteRepository,
+                           VehiculoRepository vehiculoRepository) {
+        this.alquilerRepository = alquilerRepository;
+        this.clienteRepository = clienteRepository;
+        this.vehiculoRepository = vehiculoRepository;
+    }
+
+    /**
+     * Alquilar cambia el estado del vehículo y crea el alquiler en una sola transacción:
+     * si algo falla, no queda ni el vehículo marcado como alquilado ni el alquiler a medias.
+     */
+    @Transactional
+    public AlquilerResponse alquilar(CrearAlquilerRequest request) {
+        Cliente cliente = buscarCliente(request.clienteId());
+        Vehiculo vehiculo = buscarVehiculo(request.vehiculoId());
+        Alquiler alquiler = Alquiler.iniciar(cliente, vehiculo, request.dias());
+        return toResponse(alquilerRepository.save(alquiler));
+    }
+
+    /** Devolver registra los kilómetros, libera el vehículo y cierra el alquiler en la misma transacción. */
+    @Transactional
+    public AlquilerResponse devolver(Long id, BigDecimal kmRecorridos) {
+        Alquiler alquiler = buscar(id);
+        alquiler.finalizar(kmRecorridos);
+        return toResponse(alquiler);
+    }
+
+    @Transactional(readOnly = true)
+    public CotizacionResponse cotizar(Long clienteId, Long vehiculoId, int dias) {
+        Cliente cliente = buscarCliente(clienteId);
+        Vehiculo vehiculo = buscarVehiculo(vehiculoId);
+        if (!(vehiculo instanceof Alquilable alquilable)) {
+            throw new IllegalArgumentException("Los camiones son de uso interno y no se alquilan");
+        }
+        return new CotizacionResponse(cliente.getId(), cliente.getNombre(), vehiculo.getId(),
+                vehiculo.getDescripcion(), dias, cliente.calcularTotal(alquilable, dias));
+    }
+
+    @Transactional(readOnly = true)
+    public AlquilerResponse obtener(Long id) {
+        return toResponse(buscar(id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlquilerResponse> listar(Long clienteId) {
+        List<Alquiler> alquileres = clienteId == null
+                ? alquilerRepository.findAll()
+                : alquilerRepository.findByClienteIdOrderByFechaInicioDesc(clienteId);
+        return alquileres.stream().map(this::toResponse).toList();
+    }
+
+    private Alquiler buscar(Long id) {
+        return alquilerRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe un alquiler con id " + id));
+    }
+
+    private Cliente buscarCliente(Long id) {
+        return clienteRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe un cliente con id " + id));
+    }
+
+    private Vehiculo buscarVehiculo(Long id) {
+        return vehiculoRepository.findByIdAndActivoTrue(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe un vehículo activo con id " + id));
+    }
+
+    private AlquilerResponse toResponse(Alquiler a) {
+        return new AlquilerResponse(a.getId(), a.getCliente().getId(), a.getCliente().getNombre(),
+                a.getVehiculo().getId(), a.getVehiculo().getDescripcion(), a.getDias(), a.getCostoTotal(),
+                a.getEstado().name(), a.getFechaInicio(), a.getFechaDevolucion(), a.getKmRecorridos());
+    }
+}

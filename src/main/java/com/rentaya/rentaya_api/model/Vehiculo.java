@@ -38,6 +38,12 @@ public abstract class Vehiculo {
     protected Vehiculo() { }
 
     protected Vehiculo(String placa, String marca, String modelo, int anio, BigDecimal tarifaDiariaBase) {
+        if (placa == null || placa.isBlank()) {
+            throw new IllegalArgumentException("La placa no puede estar vacía");
+        }
+        if (tarifaDiariaBase == null || tarifaDiariaBase.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("La tarifa debe ser mayor que 0");
+        }
         this.placa = placa;
         this.marca = marca;
         this.modelo = modelo;

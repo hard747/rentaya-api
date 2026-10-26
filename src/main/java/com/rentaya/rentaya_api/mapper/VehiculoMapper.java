@@ -34,9 +34,11 @@ public class VehiculoMapper {
             capacidadToneladas = c.getCapacidadToneladas();
         }
 
+        Boolean disponible = v instanceof Alquilable a ? a.estaDisponible() : null;
+
         return new VehiculoResponse(
                 v.getId(), v.getTipo(), v.getPlaca(), v.getMarca(), v.getModelo(),
                 v.getAnio(), v.getTarifaDiariaBase(), v.getKilometraje(), v.getDescripcion(),
-                numeroPuertas, cilindrada, incluyeCasco, capacidadToneladas);
+                numeroPuertas, cilindrada, incluyeCasco, capacidadToneladas, disponible);
     }
 }

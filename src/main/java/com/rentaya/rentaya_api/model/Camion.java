@@ -18,6 +18,9 @@ public class Camion extends Vehiculo {
     public Camion(String placa, String marca, String modelo, int anio,
                   BigDecimal tarifaDiariaBase, BigDecimal capacidadToneladas) {
         super(placa, marca, modelo, anio, tarifaDiariaBase);
+        if (capacidadToneladas == null || capacidadToneladas.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("La capacidad en toneladas debe ser mayor que 0");
+        }
         this.capacidadToneladas = capacidadToneladas;
     }
 
