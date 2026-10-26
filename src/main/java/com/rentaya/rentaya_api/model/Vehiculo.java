@@ -2,6 +2,7 @@ package com.rentaya.rentaya_api.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 @Table(name = "vehiculos")
@@ -29,7 +30,7 @@ public abstract class Vehiculo {
     private BigDecimal tarifaDiariaBase;
 
     @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal kilometraje = BigDecimal.ZERO;
+    private BigDecimal kilometraje = new BigDecimal("0.00");
 
     @Column(nullable = false)
     private boolean activo = true;
@@ -44,6 +45,32 @@ public abstract class Vehiculo {
         this.tarifaDiariaBase = tarifaDiariaBase;
     }
 
+    public void registrarKilometros(BigDecimal km) {
+        if (km == null || km.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Los kilómetros deben ser mayores que 0");
+        }
+        this.kilometraje = this.kilometraje.add(km).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public void actualizarTarifa(BigDecimal nuevaTarifa) {
+        if (nuevaTarifa == null || nuevaTarifa.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("La tarifa debe ser mayor que 0");
+        }
+        this.tarifaDiariaBase = nuevaTarifa.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public void desactivar() {
+        this.activo = false;
+    }
+
+    public String getDescripcion() {
+        return marca + " " + modelo + " (" + anio + ") - " + placa;
+    }
+
+    public abstract String getTipo();
+
+    public abstract BigDecimal calcularCostoMantenimiento();
+
     public Long getId() { return id; }
     public String getPlaca() { return placa; }
     public String getMarca() { return marca; }
@@ -52,8 +79,4 @@ public abstract class Vehiculo {
     public BigDecimal getTarifaDiariaBase() { return tarifaDiariaBase; }
     public BigDecimal getKilometraje() { return kilometraje; }
     public boolean isActivo() { return activo; }
-
-    // TODO (tu ejercicio): registrarKilometros, actualizarTarifa, desactivar, getDescripcion
-
-    public abstract BigDecimal calcularCostoMantenimiento();
 }

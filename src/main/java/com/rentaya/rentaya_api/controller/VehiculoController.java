@@ -1,11 +1,18 @@
 package com.rentaya.rentaya_api.controller;
 
+import com.rentaya.rentaya_api.dto.ActualizarTarifaRequest;
+import com.rentaya.rentaya_api.dto.CrearVehiculoRequest;
 import com.rentaya.rentaya_api.dto.EstadisticaMarcaResponse;
+import com.rentaya.rentaya_api.dto.MantenimientoResponse;
+import com.rentaya.rentaya_api.dto.RegistrarKilometrosRequest;
+import com.rentaya.rentaya_api.dto.VehiculoResponse;
 import com.rentaya.rentaya_api.service.VehiculoService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -16,6 +23,49 @@ public class VehiculoController {
 
     public VehiculoController(VehiculoService vehiculoService) {
         this.vehiculoService = vehiculoService;
+    }
+
+    @PostMapping
+    public ResponseEntity<VehiculoResponse> crear(@Valid @RequestBody CrearVehiculoRequest request) {
+        VehiculoResponse creado = vehiculoService.crear(request);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(creado.id())
+                .toUri();
+        return ResponseEntity.created(location).body(creado);
+    }
+
+    @GetMapping("/{id}")
+    public VehiculoResponse obtener(@PathVariable Long id) {
+        return vehiculoService.obtener(id);
+    }
+
+    @GetMapping
+    public List<VehiculoResponse> listar(@RequestParam(required = false) String tipo) {
+        return vehiculoService.listarActivos(tipo);
+    }
+
+    @PutMapping("/{id}/tarifa")
+    public VehiculoResponse actualizarTarifa(@PathVariable Long id,
+                                             @Valid @RequestBody ActualizarTarifaRequest request) {
+        return vehiculoService.actualizarTarifa(id, request.tarifaDiariaBase());
+    }
+
+    @PostMapping("/{id}/kilometros")
+    public VehiculoResponse registrarKilometros(@PathVariable Long id,
+                                                @Valid @RequestBody RegistrarKilometrosRequest request) {
+        return vehiculoService.registrarKilometros(id, request.kilometros());
+    }
+
+    @GetMapping("/{id}/mantenimiento")
+    public MantenimientoResponse mantenimiento(@PathVariable Long id) {
+        return vehiculoService.calcularMantenimiento(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        vehiculoService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/estadisticas/por-marca")
