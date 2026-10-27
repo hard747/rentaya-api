@@ -14,7 +14,7 @@ terceirizada, folha de pagamento mensal e avaliações.
 (plano gratuito do Render: a primeira requisição após um período sem uso pode levar cerca de 1 minuto).
 
 **Frontend:** [rentaya-web](https://github.com/hard747/rentaya-web) (React, TypeScript e Tailwind CSS)
-consome esta API: [rentaya-web.onrender.com](https://rentaya-web.onrender.com).
+consome esta API: [rentaya-web-1fgw.onrender.com](https://rentaya-web-1fgw.onrender.com).
 
 ## Stack
 

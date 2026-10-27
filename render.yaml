@@ -24,4 +24,4 @@ services:
         sync: false
       # Frontend autorizado por CORS (github.com/hard747/rentaya-web).
       - key: CORS_ORIGENES
-        value: https://rentaya-web.onrender.com,http://localhost:5173
+        value: https://rentaya-web-1fgw.onrender.com,http://localhost:5173
