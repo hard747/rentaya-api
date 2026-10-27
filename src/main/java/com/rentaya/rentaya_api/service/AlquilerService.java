@@ -11,6 +11,7 @@ import com.rentaya.rentaya_api.model.Vehiculo;
 import com.rentaya.rentaya_api.repository.AlquilerRepository;
 import com.rentaya.rentaya_api.repository.ClienteRepository;
 import com.rentaya.rentaya_api.repository.VehiculoRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,10 +44,13 @@ public class AlquilerService {
         return toResponse(alquilerRepository.save(alquiler));
     }
 
-    /** Devolver registra los kilómetros, libera el vehículo y cierra el alquiler en la misma transacción. */
+    /**
+     * Devolver registra los kilómetros, libera el vehículo y cierra el alquiler en la misma transacción.
+     * Si clienteAutenticado no es null (rol CLIENTE), el alquiler debe ser suyo.
+     */
     @Transactional
-    public AlquilerResponse devolver(Long id, BigDecimal kmRecorridos) {
-        Alquiler alquiler = buscar(id);
+    public AlquilerResponse devolver(Long id, BigDecimal kmRecorridos, Long clienteAutenticado) {
+        Alquiler alquiler = buscarPropio(id, clienteAutenticado);
         alquiler.finalizar(kmRecorridos);
         return toResponse(alquiler);
     }
@@ -63,8 +67,16 @@ public class AlquilerService {
     }
 
     @Transactional(readOnly = true)
-    public AlquilerResponse obtener(Long id) {
-        return toResponse(buscar(id));
+    public AlquilerResponse obtener(Long id, Long clienteAutenticado) {
+        return toResponse(buscarPropio(id, clienteAutenticado));
+    }
+
+    private Alquiler buscarPropio(Long id, Long clienteAutenticado) {
+        Alquiler alquiler = buscar(id);
+        if (clienteAutenticado != null && !alquiler.getCliente().getId().equals(clienteAutenticado)) {
+            throw new AccessDeniedException("El alquiler " + id + " no te pertenece");
+        }
+        return alquiler;
     }
 
     @Transactional(readOnly = true)

@@ -91,11 +91,11 @@ class AlquilerServiceTest {
         Alquiler alquiler = Alquiler.iniciar(luis, auto, 3);
         when(alquilerRepository.findById(5L)).thenReturn(Optional.of(alquiler));
 
-        alquilerService.devolver(5L, new BigDecimal("350"));
+        alquilerService.devolver(5L, new BigDecimal("350"), null);
 
         assertThat(auto.estaDisponible()).isTrue();
         assertThat(auto.getKilometraje()).isEqualByComparingTo("350.00");
-        assertThatThrownBy(() -> alquilerService.devolver(5L, new BigDecimal("10")))
+        assertThatThrownBy(() -> alquilerService.devolver(5L, new BigDecimal("10"), null))
                 .isInstanceOf(IllegalStateException.class);
     }
 }
