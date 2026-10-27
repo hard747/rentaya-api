@@ -10,6 +10,9 @@ API REST para a gestão de uma concessionária de veículos em São Paulo: frota
 (carros, motos e caminhões), clientes, aluguéis, funcionários, oficina
 terceirizada, folha de pagamento mensal e avaliações.
 
+**Demo:** [rentaya-api-b2q2.onrender.com/swagger-ui.html](https://rentaya-api-b2q2.onrender.com/swagger-ui.html)
+(plano gratuito do Render: a primeira requisição após um período sem uso pode levar cerca de 1 minuto).
+
 ## Stack
 
 | Camada | Tecnologias |
