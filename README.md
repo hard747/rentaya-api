@@ -13,6 +13,9 @@ terceirizada, folha de pagamento mensal e avaliações.
 **Demo:** [rentaya-api-b2q2.onrender.com/swagger-ui.html](https://rentaya-api-b2q2.onrender.com/swagger-ui.html)
 (plano gratuito do Render: a primeira requisição após um período sem uso pode levar cerca de 1 minuto).
 
+**Frontend:** [rentaya-web](https://github.com/hard747/rentaya-web) (React, TypeScript e Tailwind CSS)
+consome esta API: [rentaya-web.onrender.com](https://rentaya-web.onrender.com).
+
 ## Stack
 
 | Camada | Tecnologias |
@@ -186,6 +189,10 @@ O `render.yaml` descreve o serviço no **Render** (Docker, região Ohio, a mesma
 do banco Neon). Em *New → Blueprint*, conecte este repositório e preencha
 `DB_URL`, `DB_USER`, `DB_PASSWORD`, `ADMIN_USERNAME` e `ADMIN_PASSWORD`; o
 `JWT_SECRET` é gerado automaticamente. O health check usa `/actuator/health`.
+
+**CORS:** o frontend roda em outro domínio, então o navegador só permite as chamadas se a
+API responder com a origem dele. As origens autorizadas ficam em `CORS_ORIGENES`
+(separadas por vírgula; padrão `http://localhost:5173`).
 
 ## Decisões de projeto
 

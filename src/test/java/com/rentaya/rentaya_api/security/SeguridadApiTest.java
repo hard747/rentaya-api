@@ -14,7 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Login, registro, tokens JWT reales y permisos por rol (ADMIN, EMPLEADO, CLIENTE). */
@@ -151,6 +154,29 @@ class SeguridadApiTest {
                 .andExpect(jsonPath("$.info.title").value("RentaYa API"))
                 .andExpect(jsonPath("$.paths['/api/v1/alquileres']").exists());
         get("/swagger-ui/index.html", null).andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("CORS: el navegador acepta al frontend autorizado y rechaza otros orígenes")
+    void cors() throws Exception {
+        mockMvc.perform(options("/api/v1/alquileres")
+                        .header(HttpHeaders.ORIGIN, "http://localhost:5173")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "authorization,content-type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:5173"));
+        mockMvc.perform(options("/api/v1/alquileres")
+                        .header(HttpHeaders.ORIGIN, "https://sitio-ajeno.com")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("La raíz redirige a Swagger UI")
+    void raiz() throws Exception {
+        get("/", null)
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/swagger-ui.html"));
     }
 
     @Test

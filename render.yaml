@@ -22,3 +22,6 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      # Frontend autorizado por CORS (github.com/hard747/rentaya-web).
+      - key: CORS_ORIGENES
+        value: https://rentaya-web.onrender.com,http://localhost:5173

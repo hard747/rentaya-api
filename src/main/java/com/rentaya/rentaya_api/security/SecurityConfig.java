@@ -2,12 +2,14 @@ package com.rentaya.rentaya_api.security;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.rentaya.rentaya_api.exception.ErrorResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,12 +22,16 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tools.jackson.databind.ObjectMapper;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * API sin estado: cada petición trae un JWT firmado con HMAC-SHA256 en el header Authorization.
@@ -43,10 +49,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Público: login, registro, salud, documentación y catálogo de vehículos
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/registro").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/").permitAll()
+                        // Spring reenvía los errores (por ejemplo, una ruta inexistente) a /error: si no fuera
+                        // pública, un 404 llegaría al cliente como un 401 engañoso.
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/vehiculos/estadisticas/**").hasRole(ADMIN)
@@ -89,6 +100,23 @@ public class SecurityConfig {
         res.setCharacterEncoding(StandardCharsets.UTF_8.name());
         objectMapper.writeValue(res.getOutputStream(),
                 new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), mensaje, path, null));
+    }
+
+    /**
+     * CORS: el frontend vive en otro dominio, así que el navegador solo le deja llamar a la API
+     * si esta responde con su origen en Access-Control-Allow-Origin. Los orígenes vienen de CORS_ORIGENES.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(@Value("${rentaya.cors.origenes:http://localhost:5173}") List<String> origenes) {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(origenes);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setExposedHeaders(List.of("Location"));
+        config.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", config);
+        return source;
     }
 
     @Bean
