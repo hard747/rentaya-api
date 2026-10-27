@@ -13,6 +13,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -61,7 +62,7 @@ class RepositoriosPostgresTest {
         vehiculoRepository.save(new Moto("MMM-002", "Honda", "XR150", 2021, new BigDecimal("50"), 150, false));
         vehiculoRepository.save(new Camion("CAM-001", "Volvo", "FH", 2020, new BigDecimal("400"), new BigDecimal("12")));
 
-        assertThat(vehiculoRepository.findActivosPorTipo(Moto.class)).hasSize(2);
+        assertThat(vehiculoRepository.findActivosPorTipo(Moto.class, Pageable.unpaged())).hasSize(2);
         assertThat(vehiculoRepository.obtenerEstadisticasPorMarca())
                 .filteredOn(e -> e.getMarca().equals("Honda"))
                 .singleElement()
