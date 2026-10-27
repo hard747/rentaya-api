@@ -147,6 +147,42 @@ class FlujoRentaYaApiTest {
     }
 
     @Test
+    @DisplayName("Liquidación mensual: paga a todos los Pagable, guarda el historial y reinicia el mes")
+    void liquidacionMensual() throws Exception {
+        long conductor = crear("/api/v1/empleados", """
+                {"tipo":"CONDUCTOR","nombre":"Carlos Ruiz","dni":"40123456","sueldoBase":2000,
+                 "aniosAntiguedad":5,"licencia":"C"}""");
+        long mecanica = crear("/api/v1/empleados", """
+                {"tipo":"MECANICO","nombre":"María Quispe","dni":"42345678","sueldoBase":2200,
+                 "aniosAntiguedad":2,"especialidad":"Motores"}""");
+        long taller = crear("/api/v1/talleres", """
+                {"razonSocial":"AutoFix SAC","ruc":"20123456789"}""");
+        for (int i = 0; i < 10; i++) {
+            mockMvc.perform(post("/api/v1/empleados/" + conductor + "/viajes"));
+        }
+        postJson("/api/v1/empleados/" + mecanica + "/horas-extra", "{\"horas\":8}");
+        postJson("/api/v1/talleres/" + taller + "/facturas", "{\"monto\":1000}");
+
+        mockMvc.perform(get("/api/v1/pagos/pendientes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("PENDIENTE"))
+                .andExpect(content().string(containsString("\"total\":6158.00")));
+
+        mockMvc.perform(post("/api/v1/pagos/liquidaciones/2026-10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("PAGADO"))
+                .andExpect(content().string(containsString("\"total\":6158.00")));
+        mockMvc.perform(post("/api/v1/pagos/liquidaciones/2026-10")).andExpect(status().isConflict());
+        mockMvc.perform(get("/api/v1/pagos/liquidaciones/2026-10"))
+                .andExpect(jsonPath("$.pagos.length()").value(3));
+
+        // Tras pagar, los contadores del mes vuelven a 0: conductor 2000 + bono 200 = 2200.00
+        mockMvc.perform(get("/api/v1/empleados/" + conductor + "/pago"))
+                .andExpect(content().string(containsString("\"monto\":2200.00")));
+        mockMvc.perform(post("/api/v1/pagos/liquidaciones/octubre")).andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("Validaciones y conflictos de personas y talleres")
     void validaciones() throws Exception {
         crear("/api/v1/clientes", """

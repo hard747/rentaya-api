@@ -1,6 +1,8 @@
 package com.rentaya.rentaya_api.repository;
 
 import com.rentaya.rentaya_api.model.Vehiculo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,10 +16,11 @@ public interface VehiculoRepository extends JpaRepository<Vehiculo, Long> {
 
     Optional<Vehiculo> findByIdAndActivoTrue(Long id);
 
-    List<Vehiculo> findByActivoTrueOrderByIdAsc();
+    Page<Vehiculo> findByActivoTrue(Pageable pageable);
 
-    @Query("SELECT v FROM Vehiculo v WHERE v.activo = true AND TYPE(v) = :tipo ORDER BY v.id")
-    List<Vehiculo> findActivosPorTipo(@Param("tipo") Class<? extends Vehiculo> tipo);
+    @Query(value = "SELECT v FROM Vehiculo v WHERE v.activo = true AND TYPE(v) = :tipo",
+           countQuery = "SELECT COUNT(v) FROM Vehiculo v WHERE v.activo = true AND TYPE(v) = :tipo")
+    Page<Vehiculo> findActivosPorTipo(@Param("tipo") Class<? extends Vehiculo> tipo, Pageable pageable);
 
     @Query(value = """
             SELECT marca,

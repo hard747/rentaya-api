@@ -11,7 +11,8 @@ import com.rentaya.rentaya_api.repository.PersonaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class ClienteService {
@@ -44,8 +45,8 @@ public class ClienteService {
     }
 
     @Transactional(readOnly = true)
-    public List<ClienteResponse> listar() {
-        return clienteRepository.findAll().stream().map(mapper::toResponse).toList();
+    public Page<ClienteResponse> listar(Pageable pageable) {
+        return clienteRepository.findAll(pageable).map(mapper::toResponse);
     }
 
     Cliente buscar(Long id) {

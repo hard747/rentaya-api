@@ -102,7 +102,7 @@ class SeguridadApiTest {
                 .andExpect(jsonPath("$.rol").value("CLIENTE")));
         String clientes = get("/api/v1/clientes", admin).andReturn().getResponse().getContentAsString();
         long idAna = ((Number) JsonPath.<java.util.List<Object>>read(clientes,
-                "$[?(@.dni == '45678912')].id").getFirst()).longValue();
+                "$.content[?(@.dni == '45678912')].id").getFirst()).longValue();
 
         // Puede alquilar a su nombre, pero no a nombre de otro cliente
         post("/api/v1/alquileres", "{\"clienteId\":" + idAna + ",\"vehiculoId\":" + auto + ",\"dias\":3}", ana)
@@ -113,7 +113,7 @@ class SeguridadApiTest {
         // Solo ve sus alquileres, aunque pida los de otro
         get("/api/v1/alquileres?clienteId=" + otroCliente, ana)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].clienteId", everyItem(is((int) idAna))));
+                .andExpect(jsonPath("$.content[*].clienteId", everyItem(is((int) idAna))));
 
         // Puede calificar a un conductor, pero no administrar
         post("/api/v1/empleados/" + conductor + "/calificaciones", "{\"estrellas\":5}", ana)
@@ -141,6 +141,16 @@ class SeguridadApiTest {
         post("/api/v1/usuarios", "{\"username\":\"otro\",\"password\":\"clave-segura-3\",\"rol\":\"ADMIN\"}", pedro)
                 .andExpect(status().isForbidden());
         post("/api/v1/vehiculos", "{}", pedro).andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("La documentación OpenAPI y Swagger UI son públicas")
+    void documentacion() throws Exception {
+        get("/v3/api-docs", null)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.info.title").value("RentaYa API"))
+                .andExpect(jsonPath("$.paths['/api/v1/alquileres']").exists());
+        get("/swagger-ui/index.html", null).andExpect(status().isOk());
     }
 
     @Test

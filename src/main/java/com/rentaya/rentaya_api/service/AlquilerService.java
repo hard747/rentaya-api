@@ -16,7 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class AlquilerService {
@@ -80,11 +81,11 @@ public class AlquilerService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlquilerResponse> listar(Long clienteId) {
-        List<Alquiler> alquileres = clienteId == null
-                ? alquilerRepository.findAll()
-                : alquilerRepository.findByClienteIdOrderByFechaInicioDesc(clienteId);
-        return alquileres.stream().map(this::toResponse).toList();
+    public Page<AlquilerResponse> listar(Long clienteId, Pageable pageable) {
+        Page<Alquiler> alquileres = clienteId == null
+                ? alquilerRepository.findAll(pageable)
+                : alquilerRepository.findByClienteId(clienteId, pageable);
+        return alquileres.map(this::toResponse);
     }
 
     private Alquiler buscar(Long id) {

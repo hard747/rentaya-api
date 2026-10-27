@@ -13,6 +13,8 @@ import com.rentaya.rentaya_api.model.Camion;
 import com.rentaya.rentaya_api.model.Moto;
 import com.rentaya.rentaya_api.model.Vehiculo;
 import com.rentaya.rentaya_api.repository.VehiculoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,11 +49,11 @@ public class VehiculoService {
     }
 
     @Transactional(readOnly = true)
-    public List<VehiculoResponse> listarActivos(String tipo) {
-        List<Vehiculo> vehiculos = (tipo == null || tipo.isBlank())
-                ? vehiculoRepository.findByActivoTrueOrderByIdAsc()
-                : vehiculoRepository.findActivosPorTipo(claseDeTipo(tipo));
-        return vehiculos.stream().map(vehiculoMapper::toResponse).toList();
+    public Page<VehiculoResponse> listarActivos(String tipo, Pageable pageable) {
+        Page<Vehiculo> vehiculos = (tipo == null || tipo.isBlank())
+                ? vehiculoRepository.findByActivoTrue(pageable)
+                : vehiculoRepository.findActivosPorTipo(claseDeTipo(tipo), pageable);
+        return vehiculos.map(vehiculoMapper::toResponse);
     }
 
     @Transactional

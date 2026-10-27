@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 @RestController
 @RequestMapping("/api/v1/clientes")
@@ -33,7 +35,7 @@ public class ClienteController {
     }
 
     @GetMapping
-    public List<ClienteResponse> listar() {
-        return clienteService.listar();
+    public Page<ClienteResponse> listar(@PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        return clienteService.listar(pageable);
     }
 }

@@ -2,6 +2,7 @@ package com.rentaya.rentaya_api.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -79,6 +80,13 @@ public class GlobalExceptionHandler {
                                                                  HttpServletRequest request) {
         return construir(HttpStatus.BAD_REQUEST,
                 "Falta el parámetro '" + ex.getParameterName() + "'", request, null);
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ErrorResponse> manejarOrdenInvalido(PropertyReferenceException ex,
+                                                             HttpServletRequest request) {
+        return construir(HttpStatus.BAD_REQUEST, "No se puede ordenar por '" + ex.getPropertyName() + "'",
+                request, null);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

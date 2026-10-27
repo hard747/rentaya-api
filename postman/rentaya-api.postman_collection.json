@@ -1,738 +1,1463 @@
 {
   "info": {
     "name": "rentaya-api",
-    "description": "Cenários da API de gestão de frota. Rode na ordem (Collection Runner) com o ambiente 'rentaya-local' e a tabela limpa.",
+    "description": "Cenários da API RentaYa. Rode na ordem (Collection Runner) com o ambiente 'rentaya-local': a primeira requisição faz login e guarda o token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
   },
   "item": [
     {
-      "name": "01 Crear auto (201)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"tipo\": \"AUTO\",\n  \"placa\": \"TST-101\",\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Corolla\",\n  \"anio\": 2022,\n  \"tarifaDiariaBase\": 120.0,\n  \"numeroPuertas\": 4\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Login como admin (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{adminUser}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
-              "pm.test(\"Header Location\", () => pm.response.to.have.header(\"Location\"));",
-              "pm.test(\"Kilometraje inicial 0.00\", () => pm.expect(pm.response.text()).to.include('\"kilometraje\":0.00'));",
-              "pm.collectionVariables.set(\"idAuto\", pm.response.json().id);"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "02 Crear moto (201)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"tipo\": \"MOTO\",\n  \"placa\": \"TST-102\",\n  \"marca\": \"Honda\",\n  \"modelo\": \"CB 500\",\n  \"anio\": 2023,\n  \"tarifaDiariaBase\": 80.0,\n  \"cilindrada\": 500,\n  \"incluyeCasco\": true\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
-              "pm.collectionVariables.set(\"idMoto\", pm.response.json().id);"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "03 Crear camión (201)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"tipo\": \"CAMION\",\n  \"placa\": \"TST-103\",\n  \"marca\": \"Volvo\",\n  \"modelo\": \"FH 540\",\n  \"anio\": 2021,\n  \"tarifaDiariaBase\": 450.0,\n  \"capacidadToneladas\": 25.5\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
-              "pm.collectionVariables.set(\"idCamion\", pm.response.json().id);"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "04 Datos inválidos (400)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"tipo\": \"AUTO\",\n  \"placa\": \"abc123\",\n  \"marca\": \"\",\n  \"modelo\": \"Corolla\",\n  \"anio\": 1980,\n  \"tarifaDiariaBase\": -10,\n  \"numeroPuertas\": 9\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
-              "pm.test(\"Errores por campo\", () => pm.expect(pm.response.json().errores).to.have.property(\"placa\"));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "05 Tipo inexistente (400)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"tipo\": \"AVION\",\n  \"placa\": \"AVN-001\",\n  \"marca\": \"Embraer\",\n  \"modelo\": \"E195\",\n  \"anio\": 2020,\n  \"tarifaDiariaBase\": 9000\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "06 Placa duplicada (409)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"tipo\": \"AUTO\",\n  \"placa\": \"TST-101\",\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Corolla\",\n  \"anio\": 2022,\n  \"tarifaDiariaBase\": 120.0,\n  \"numeroPuertas\": 4\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "07a Obtener por id (200)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "{{idAuto}}"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "07b Id inexistente (404)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/999999",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "999999"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "08a Listar autos (200)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos?tipo=AUTO",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos"
-          ],
-          "query": [
+          },
+          "event": [
             {
-              "key": "tipo",
-              "value": "AUTO"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+                ]
+              }
             }
           ]
-        }
-      },
-      "event": [
+        },
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
-              "pm.test(\"Solo autos\", () => pm.response.json().forEach(v => pm.expect(v.tipo).to.eql(\"AUTO\")));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "08b Tipo inválido (400)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos?tipo=AVION",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos"
-          ],
-          "query": [
+          "name": "Sin token: crear vehículo (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
             {
-              "key": "tipo",
-              "value": "AVION"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
             }
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "09a Cambiar tarifa (200)",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}/tarifa",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "{{idAuto}}",
-            "tarifa"
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"tarifaDiariaBase\": 150\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
-            ]
-          }
+          "name": "Catálogo público (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "09b Tarifa no positiva (400)",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}/tarifa",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "{{idAuto}}",
-            "tarifa"
+      "name": "Vehículos",
+      "item": [
+        {
+          "name": "01 Crear auto (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"AUTO\",\n  \"placa\": \"PMN-101\",\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Yaris\",\n  \"anio\": 2022,\n  \"tarifaDiariaBase\": 120,\n  \"numeroPuertas\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Header Location\", () => pm.response.to.have.header(\"Location\"));",
+                  "pm.test(\"Kilometraje inicial 0.00\", () => pm.expect(pm.response.text()).to.include(\"\\\"kilometraje\\\":0.00\"));",
+                  "pm.collectionVariables.set(\"idAuto\", pm.response.json().id);"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"tarifaDiariaBase\": -5\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "10a Sumar kilómetros (200)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}/kilometros",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "{{idAuto}}",
-            "kilometros"
+          "name": "02 Crear moto (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"MOTO\",\n  \"placa\": \"PMN-102\",\n  \"marca\": \"Honda\",\n  \"modelo\": \"CB190R\",\n  \"anio\": 2023,\n  \"tarifaDiariaBase\": 60,\n  \"cilindrada\": 190,\n  \"incluyeCasco\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"idMoto\", pm.response.json().id);"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"kilometros\": 1000\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "10b Kilómetros en 0 (400)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}/kilometros",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "{{idAuto}}",
-            "kilometros"
+          "name": "03 Crear camión (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CAMION\",\n  \"placa\": \"PMN-103\",\n  \"marca\": \"Volvo\",\n  \"modelo\": \"FH\",\n  \"anio\": 2020,\n  \"tarifaDiariaBase\": 400,\n  \"capacidadToneladas\": 12\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"idCamion\", pm.response.json().id);"
+                ]
+              }
+            }
           ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"kilometros\": 0\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+        {
+          "name": "04 Datos inválidos (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"AUTO\",\n  \"placa\": \"abc123\",\n  \"marca\": \"\",\n  \"modelo\": \"Yaris\",\n  \"anio\": 1980,\n  \"tarifaDiariaBase\": -10,\n  \"numeroPuertas\": 9\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        }
-      },
-      "event": [
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Errores por campo\", () => pm.expect(pm.response.json().errores).to.have.property(\"placa\"));"
+                ]
+              }
+            }
+          ]
+        },
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
-            ]
-          }
+          "name": "05 Tipo inexistente (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"AVION\",\n  \"placa\": \"AVN-001\",\n  \"marca\": \"Embraer\",\n  \"modelo\": \"E195\",\n  \"anio\": 2020,\n  \"tarifaDiariaBase\": 9000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Placa duplicada (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"AUTO\",\n  \"placa\": \"PMN-101\",\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Yaris\",\n  \"anio\": 2022,\n  \"tarifaDiariaBase\": 120,\n  \"numeroPuertas\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 Obtener por id (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos",
+                "{{idAuto}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 Listar autos paginado (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos?tipo=AUTO&page=0&size=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "AUTO"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Solo autos\", () => pm.response.json().content.forEach(v => pm.expect(v.tipo).to.eql(\"AUTO\")));",
+                  "pm.test(\"Metadatos de página\", () => pm.expect(pm.response.json().page.size).to.eql(5));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 Cambiar tarifa (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}/tarifa",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos",
+                "{{idAuto}}",
+                "tarifa"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tarifaDiariaBase\": 120\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 Kilómetros en 0 (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}/kilometros",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos",
+                "{{idAuto}}",
+                "kilometros"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kilometros\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 Camión: 1000 km (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos/{{idCamion}}/kilometros",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos",
+                "{{idCamion}}",
+                "kilometros"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kilometros\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 Estadísticas por marca (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehiculos/estadisticas/por-marca",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vehiculos",
+                "estadisticas",
+                "por-marca"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "11 Costo de mantenimiento (200)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}/mantenimiento",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "{{idAuto}}",
-            "mantenimiento"
-          ]
-        }
-      },
-      "event": [
+      "name": "Personas y taller",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
-              "pm.test(\"Auto: 100 + 1000 x 0.05 = 150.00\", () => pm.expect(pm.response.text()).to.include('\"costoMantenimiento\":150.00'));"
-            ]
-          }
+          "name": "Crear cliente Ana (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CLIENTE\",\n  \"nombre\": \"Ana Torres\",\n  \"dni\": \"45678912\",\n  \"email\": \"ana@mail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"idAna\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear cliente premium Luis (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "clientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CLIENTE_PREMIUM\",\n  \"nombre\": \"Luis Gómez\",\n  \"dni\": \"71234567\",\n  \"email\": \"luis@mail.com\",\n  \"porcentajeDescuento\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"idLuis\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear conductor (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empleados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "empleados"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CONDUCTOR\",\n  \"nombre\": \"Carlos Ruiz\",\n  \"dni\": \"40123456\",\n  \"sueldoBase\": 2000,\n  \"aniosAntiguedad\": 5,\n  \"licencia\": \"C\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"idConductor\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear mecánica (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empleados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "empleados"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"MECANICO\",\n  \"nombre\": \"María Quispe\",\n  \"dni\": \"42345678\",\n  \"sueldoBase\": 2200,\n  \"aniosAntiguedad\": 2,\n  \"especialidad\": \"Motores\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"idMecanica\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear taller (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/talleres",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "talleres"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razonSocial\": \"AutoFix SAC\",\n  \"ruc\": \"20123456789\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"idTaller\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "12a Borrado lógico (204)",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "{{idAuto}}"
-          ]
-        }
-      },
-      "event": [
+      "name": "Alquileres y revisiones",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
-            ]
-          }
+          "name": "Cotizar: Luis, auto, 7 días = 604.80",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alquileres/cotizacion?clienteId={{idLuis}}&vehiculoId={{idAuto}}&dias=7",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "alquileres",
+                "cotizacion"
+              ],
+              "query": [
+                {
+                  "key": "clienteId",
+                  "value": "{{idLuis}}"
+                },
+                {
+                  "key": "vehiculoId",
+                  "value": "{{idAuto}}"
+                },
+                {
+                  "key": "dias",
+                  "value": "7"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Descuento premium aplicado\", () => pm.expect(pm.response.text()).to.include(\"\\\"costoTotal\\\":604.80\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alquilar auto a Ana, 3 días (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alquileres",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "alquileres"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": \"{{idAna}}\",\n  \"vehiculoId\": \"{{idAuto}}\",\n  \"dias\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Costo 360.00\", () => pm.expect(pm.response.text()).to.include(\"\\\"costoTotal\\\":360.00\"));",
+                  "pm.collectionVariables.set(\"idAlquiler\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alquilar el mismo auto otra vez (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alquileres",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "alquileres"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": \"{{idLuis}}\",\n  \"vehiculoId\": \"{{idAuto}}\",\n  \"dias\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Los camiones no se alquilan (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alquileres",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "alquileres"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": \"{{idAna}}\",\n  \"vehiculoId\": \"{{idCamion}}\",\n  \"dias\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Devolver con 350 km (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alquileres/{{idAlquiler}}/devolucion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "alquileres",
+                "{{idAlquiler}}",
+                "devolucion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kmRecorridos\": 350\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Alquiler finalizado\", () => pm.expect(pm.response.text()).to.include(\"\\\"estado\\\":\\\"FINALIZADO\\\"\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Revisión del auto = 117.50",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empleados/{{idMecanica}}/revisiones/{{idAuto}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "empleados",
+                "{{idMecanica}}",
+                "revisiones",
+                "{{idAuto}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Costo de mantenimiento\", () => pm.expect(pm.response.text()).to.include(\"117.50\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Revisión del camión = 640.00",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empleados/{{idMecanica}}/revisiones/{{idCamion}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "empleados",
+                "{{idMecanica}}",
+                "revisiones",
+                "{{idCamion}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Costo de mantenimiento\", () => pm.expect(pm.response.text()).to.include(\"640.00\"));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "12b Vehículo borrado (404)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/{{idAuto}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "{{idAuto}}"
-          ]
-        }
-      },
-      "event": [
+      "name": "Pagos y calificaciones",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Estadísticas por marca (200)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/vehiculos/estadisticas/por-marca",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "vehiculos",
-            "estadisticas",
-            "por-marca"
+          "name": "Viaje del conductor (200)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empleados/{{idConductor}}/viajes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "empleados",
+                "{{idConductor}}",
+                "viajes"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
           ]
-        }
-      },
-      "event": [
+        },
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Health check (200)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/actuator/health",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "actuator",
-            "health"
+          "name": "8 horas extra (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empleados/{{idMecanica}}/horas-extra",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "empleados",
+                "{{idMecanica}}",
+                "horas-extra"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"horas\": 8\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
           ]
-        }
-      },
-      "event": [
+        },
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
-            ]
-          }
+          "name": "Factura de 1000 al taller (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/talleres/{{idTaller}}/facturas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "talleres",
+                "{{idTaller}}",
+                "facturas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"monto\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Calificar conductor con 5 (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empleados/{{idConductor}}/calificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "empleados",
+                "{{idConductor}}",
+                "calificaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estrellas\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Calificar con 6 estrellas (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/empleados/{{idConductor}}/calificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "empleados",
+                "{{idConductor}}",
+                "calificaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estrellas\": 6\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Planilla pendiente del mes (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pagos/pendientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pagos",
+                "pendientes"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Pendiente\", () => pm.expect(pm.response.text()).to.include(\"\\\"estado\\\":\\\"PENDIENTE\\\"\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Health check (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
   ],
   "variable": [
+    {
+      "key": "token",
+      "value": ""
+    },
     {
       "key": "idAuto",
       "value": ""
@@ -743,6 +1468,30 @@
     },
     {
       "key": "idCamion",
+      "value": ""
+    },
+    {
+      "key": "idAna",
+      "value": ""
+    },
+    {
+      "key": "idLuis",
+      "value": ""
+    },
+    {
+      "key": "idConductor",
+      "value": ""
+    },
+    {
+      "key": "idMecanica",
+      "value": ""
+    },
+    {
+      "key": "idTaller",
+      "value": ""
+    },
+    {
+      "key": "idAlquiler",
       "value": ""
     }
   ]

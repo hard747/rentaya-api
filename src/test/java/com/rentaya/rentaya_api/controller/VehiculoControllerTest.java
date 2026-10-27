@@ -155,11 +155,11 @@ class VehiculoControllerTest {
         crear(camion("LIS-003"));
         mockMvc.perform(get(URL).param("tipo", "AUTO"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tipo", everyItem(org.hamcrest.Matchers.is("AUTO"))))
-                .andExpect(jsonPath("$[*].placa", hasItem("LIS-001")));
+                .andExpect(jsonPath("$.content[*].tipo", everyItem(org.hamcrest.Matchers.is("AUTO"))))
+                .andExpect(jsonPath("$.content[*].placa", hasItem("LIS-001")));
         mockMvc.perform(get(URL))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].placa", hasItem("LIS-003")));
+                .andExpect(jsonPath("$.content[*].placa", hasItem("LIS-003")));
         mockMvc.perform(get(URL).param("tipo", "AVION"))
                 .andExpect(status().isBadRequest());
     }
@@ -220,7 +220,7 @@ class VehiculoControllerTest {
         mockMvc.perform(get(URL + "/" + id))
                 .andExpect(status().isNotFound());
         mockMvc.perform(get(URL))
-                .andExpect(jsonPath("$[*].placa", not(hasItem("DEL-001"))));
+                .andExpect(jsonPath("$.content[*].placa", not(hasItem("DEL-001"))));
         mockMvc.perform(delete(URL + "/" + id))
                 .andExpect(status().isNotFound());
     }

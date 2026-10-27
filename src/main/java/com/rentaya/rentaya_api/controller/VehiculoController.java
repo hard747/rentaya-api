@@ -8,6 +8,9 @@ import com.rentaya.rentaya_api.dto.RegistrarKilometrosRequest;
 import com.rentaya.rentaya_api.dto.VehiculoResponse;
 import com.rentaya.rentaya_api.service.VehiculoService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -41,8 +44,9 @@ public class VehiculoController {
     }
 
     @GetMapping
-    public List<VehiculoResponse> listar(@RequestParam(required = false) String tipo) {
-        return vehiculoService.listarActivos(tipo);
+    public Page<VehiculoResponse> listar(@RequestParam(required = false) String tipo,
+                                         @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        return vehiculoService.listarActivos(tipo, pageable);
     }
 
     @PutMapping("/{id}/tarifa")

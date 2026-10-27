@@ -15,7 +15,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 
 /** ADMIN y EMPLEADO operan sobre cualquier alquiler; un CLIENTE solo sobre los suyos. */
 @RestController
@@ -57,9 +60,12 @@ public class AlquilerController {
     }
 
     @GetMapping
-    public List<AlquilerResponse> listar(@RequestParam(required = false) Long clienteId, Authentication auth) {
+    public Page<AlquilerResponse> listar(@RequestParam(required = false) Long clienteId,
+                                         @PageableDefault(size = 20, sort = "fechaInicio",
+                                                 direction = Sort.Direction.DESC) Pageable pageable,
+                                         Authentication auth) {
         Long propio = UsuarioActual.clienteId(auth);
-        return alquilerService.listar(propio != null ? propio : clienteId);
+        return alquilerService.listar(propio != null ? propio : clienteId, pageable);
     }
 
     private static void exigirMismoCliente(Authentication auth, Long clienteId) {
