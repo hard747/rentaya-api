@@ -6,7 +6,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
 
-API REST para a gestão de uma concessionária de veículos em São Paulo: frota
+API REST para a gestão de uma concessionária de veículos: frota
 (carros, motos e caminhões), clientes, aluguéis, funcionários, oficina
 terceirizada, folha de pagamento mensal e avaliações.
 
